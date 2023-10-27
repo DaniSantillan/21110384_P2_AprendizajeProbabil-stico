@@ -1,0 +1,60 @@
+import torch
+import pyro
+import pyro.distributions as dist
+from torch.distributions import constraints
+from pyro.infer import SVI, Trace_ELBO
+from pyro.optim import Adam
+
+# Datos de ejemplo
+x_train = torch.tensor([1.0, 2.0, 3.0, 4.0, 5.0])
+y_train = torch.tensor([2.0, 4.0, 5.0, 4.0, 5.0])
+
+# Modelo de regresión lineal bayesiana
+def model(x, y):
+    # Parámetros priors
+    w_prior = dist.Normal(0, 1).expand([1]).to_event(1)
+    b_prior = dist.Normal(0, 1).expand([1]).to_event(1)
+    
+    # Parámetros del modelo
+    w = pyro.sample("weight", w_prior)
+    b = pyro.sample("bias", b_prior)
+    
+    # Modelo lineal
+    y_pred = w * x + b
+    
+    # Observaciones
+    with pyro.plate("data", len(x)):
+        pyro.sample("obs", dist.Normal(y_pred, 0.1), obs=y)
+
+# Guía de inferencia
+def guide(x, y):
+    # Parámetros posteriors
+    w_loc = pyro.param("w_loc", torch.tensor(0.0))
+    w_scale = pyro.param("w_scale", torch.tensor(1.0), constraint=constraints.positive)
+    b_loc = pyro.param("b_loc", torch.tensor(0.0))
+    b_scale = pyro.param("b_scale", torch.tensor(1.0), constraint=constraints.positive)
+    
+    # Parámetros del modelo
+    w = pyro.sample("weight", dist.Normal(w_loc, w_scale))
+    b = pyro.sample("bias", dist.Normal(b_loc, b_scale))
+
+# Optimizador
+adam_params = {"lr": 0.01}
+optimizer = Adam(adam_params)
+
+# Algoritmo de inferencia
+svi = SVI(model, guide, optimizer, loss=Trace_ELBO())
+
+# Entrenamiento del modelo
+num_iterations = 1000
+for i in range(num_iterations):
+    elbo = svi.step(x_train, y_train)
+    if i % 100 == 0:
+        print("Iteración {}: Loss {}".format(i, elbo))
+
+# Parámetros aprendidos
+w_posterior = pyro.param("w_loc").item()
+b_posterior = pyro.param("b_loc").item()
+
+# Resultado
+print("Parámetros aprendidos - Peso: {:.4f}, Sesgo: {:.4f}".format(w_posterior, b_posterior))
