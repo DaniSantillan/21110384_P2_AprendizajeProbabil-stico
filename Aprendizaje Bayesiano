@@ -1,0 +1,59 @@
+# Importamos la librería
+from collections import defaultdict
+
+# Datos de entrenamiento
+datos_entrenamiento = [
+    (['oferta', 'exclusiva', 'descuento'], 'spam'),
+    (['reunión', 'próximo', 'martes'], 'no_spam'),
+    (['gana', 'premio', 'millonario'], 'spam'),
+    (['proyecto', 'entrega', 'documento'], 'no_spam'),
+    # Agrega más datos de entrenamiento según sea necesario
+]
+
+# Contadores de palabras por clase
+contador_palabras_spam = defaultdict(int)
+contador_palabras_no_spam = defaultdict(int)
+total_documentos_spam = 0
+total_documentos_no_spam = 0
+
+# Contadores generales
+contador_total_palabras = defaultdict(int)
+
+# Procesar datos de entrenamiento
+for palabras, etiqueta in datos_entrenamiento:
+    if etiqueta == 'spam':
+        total_documentos_spam += 1
+        for palabra in palabras:
+            contador_palabras_spam[palabra] += 1
+            contador_total_palabras[palabra] += 1
+    else:
+        total_documentos_no_spam += 1
+        for palabra in palabras:
+            contador_palabras_no_spam[palabra] += 1
+            contador_total_palabras[palabra] += 1
+
+# Probabilidades a priori
+prob_spam = total_documentos_spam / len(datos_entrenamiento)
+prob_no_spam = total_documentos_no_spam / len(datos_entrenamiento)
+
+# Función para predecir la clase de un nuevo documento
+def predecir_clase(documento):
+    prob_spam_dado_documento = prob_spam
+    prob_no_spam_dado_documento = prob_no_spam
+
+    for palabra in documento:
+        prob_spam_dado_documento *= (contador_palabras_spam[palabra] + 1) / (total_documentos_spam + len(contador_total_palabras))
+        prob_no_spam_dado_documento *= (contador_palabras_no_spam[palabra] + 1) / (total_documentos_no_spam + len(contador_total_palabras))
+
+    # Comparar probabilidades y devolver la clase con la probabilidad más alta
+    if prob_spam_dado_documento > prob_no_spam_dado_documento:
+        return 'spam', prob_spam_dado_documento
+    else:
+        return 'no_spam', prob_no_spam_dado_documento
+
+# Ejemplo de predicción
+nuevo_documento = ['gana', 'descuento', 'exclusivo']
+clase_predicha, probabilidad = predecir_clase(nuevo_documento)
+
+# Resultado
+print(f"El nuevo documento es clasificado como '{clase_predicha}' con probabilidad {probabilidad}")
