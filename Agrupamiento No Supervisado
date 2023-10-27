@@ -1,0 +1,21 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.mixture import GaussianMixture
+from sklearn.datasets import make_blobs
+
+# Generar datos de ejemplo
+X, _ = make_blobs(n_samples=300, centers=4, random_state=42)
+
+# Crear un modelo de mezcla de Gaussianas con 4 componentes (grupos)
+gmm = GaussianMixture(n_components=4, random_state=42)
+
+# Ajustar el modelo a los datos
+gmm.fit(X)
+
+# Obtener las etiquetas de los grupos
+labels = gmm.predict(X)
+
+# Visualizar los resultados
+plt.scatter(X[:, 0], X[:, 1], c=labels, cmap='viridis')
+plt.title('Agrupamiento con Mezcla de Gaussianas')
+plt.show()
