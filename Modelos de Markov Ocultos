@@ -1,0 +1,25 @@
+import numpy as np
+from hmmlearn import hmm
+
+# Definir el modelo HMM
+modelo_hmm = hmm.MultinomialHMM(n_components=2)
+
+# Definir las probabilidades iniciales, de transición y de emisión
+modelo_hmm.startprob_ = np.array([0.5, 0.5])  # Probabilidades iniciales
+modelo_hmm.transmat_ = np.array([[0.7, 0.3], [0.4, 0.6]])  # Probabilidades de transición
+modelo_hmm.emissionprob_ = np.array([[0.2, 0.4, 0.4], [0.5, 0.2, 0.3]])  # Probabilidades de emisión
+
+# Generar datos sintéticos
+np.random.seed(42)
+muestras, estados_ocultos = modelo_hmm.sample(n_samples=100)
+
+# Ajustar el modelo a los datos observados
+modelo_hmm.fit(muestras)
+
+# Predicción del estado oculto
+nuevas_muestras, nuevos_estados = modelo_hmm.sample(n_samples=5)
+
+print("Muestras generadas:")
+print(nuevas_muestras)
+print("Estados ocultos predichos:")
+print(nuevos_estados)
