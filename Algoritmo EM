@@ -1,0 +1,21 @@
+import numpy as np
+from sklearn.mixture import GaussianMixture
+
+# Datos de ejemplo
+np.random.seed(42)
+data = np.concatenate([np.random.normal(-5, 1, 300), np.random.normal(5, 1, 700)]).reshape(-1, 1)
+
+# Inicialización del modelo GMM con dos componentes
+model = GaussianMixture(n_components=2, random_state=42)
+
+# Ajuste del modelo a los datos
+model.fit(data.reshape(-1, 1))
+
+# Impresión de los parámetros aprendidos
+print("Media de la primera componente:", model.means_[0][0])
+print("Desviación estándar de la primera componente:", np.sqrt(model.covariances_[0][0, 0]))
+print("Peso de la primera componente:", model.weights_[0])
+
+print("\nMedia de la segunda componente:", model.means_[1][0])
+print("Desviación estándar de la segunda componente:", np.sqrt(model.covariances_[1][0, 0]))
+print("Peso de la segunda componente:", model.weights_[1])
