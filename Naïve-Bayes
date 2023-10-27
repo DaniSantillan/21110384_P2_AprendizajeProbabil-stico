@@ -1,0 +1,42 @@
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from nltk.probability import FreqDist
+from nltk.classify import NaiveBayesClassifier
+from nltk.classify.util import accuracy
+
+nltk.download('punkt')
+nltk.download('stopwords')
+
+# Datos de entrenamiento
+training_data = [
+    ("Este es un buen producto", "positivo"),
+    ("No me gusta este artículo", "negativo"),
+    ("El servicio al cliente es excelente", "positivo"),
+    ("No volveré a comprar aquí", "negativo"),
+    ("¡Me encanta este producto!", "positivo"),
+]
+
+# Preprocesamiento de texto
+stop_words = set(stopwords.words('spanish'))
+
+def preprocess_text(text):
+    words = word_tokenize(text.lower())
+    words = [word for word in words if word.isalnum() and word not in stop_words]
+    return FreqDist(words)
+
+# Conjunto de entrenamiento preprocesado
+training_set = [(preprocess_text(text), sentiment) for (text, sentiment) in training_data]
+
+# Entrenamiento del clasificador Naïve Bayes
+classifier = NaiveBayesClassifier.train(training_set)
+
+# Datos de prueba
+test_data = "No estoy seguro acerca de este producto, podría ser útil."
+
+# Clasificación del texto de prueba
+test_features = preprocess_text(test_data)
+result = classifier.classify(test_features)
+
+# Resultado
+print(f"Sentimiento predicho: {result}")
